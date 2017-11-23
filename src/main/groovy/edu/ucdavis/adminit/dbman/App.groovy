@@ -1,24 +1,31 @@
 package edu.ucdavis.adminit.dbman
 
-import org.apache.commons.dbcp.BasicDataSource
+import edu.ucdavis.adminit.dbman.datasource.DataSourceBuilderFactory
+
+import javax.sql.DataSource
 
 class App {
     static void main(String[] args) {
-        def driverClassName = 'com.mysql.jdbc.Driver'
-        def url = 'jdbc:mysql://localhost:3306/hr?useSSL=false'
+        def hostname = 'localhost'
+        def database = 'hr'
+        def schema = 'hr'
         def username = 'root'
         def password = 'mysql'
-        def schemaName = 'hr'
         def outputFileName = '/Users/henry/hr.xml'
 
-        BasicDataSource dataSource = new BasicDataSource()
-        dataSource.setDriverClassName(driverClassName)
-        dataSource.setUrl(url)
-        dataSource.setUsername(username)
-        dataSource.setPassword(password)
+        DataSource dataSource = DataSourceBuilderFactory
+                .newInstance(DataSourceBuilderFactory.Type.mysql)
+                .hostname(hostname)
+                .database(database)
+                .username(username)
+                .password(password)
+                .options("useSSL=false")
+                .build()
         
         DatabaseManager databaseManager = new DatabaseManager(dataSource)
-        databaseManager.extractSchema(schemaName, outputFileName)
+        databaseManager.createDatabaseModel(schema)
+        databaseManager.listAllTables().each {println it}
+        databaseManager.exportSchema(schema, outputFileName)
 
         println 'OK'
     }
